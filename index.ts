@@ -1,4 +1,4 @@
-import { Grammarly, correct } from '@stewartmcgown/grammarly-api';
+import { correct, Grammarly } from '@stewartmcgown/grammarly-api';
 import { type Context, Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters';
 import type { Message, ParseMode, Update } from 'telegraf/types';
@@ -49,24 +49,32 @@ _Type /help to see these instructions again._`,
 bot.help((ctx) => reply(ctx, helpMsg, 'Markdown'));
 
 const corrections = async (text: string) => {
-  const results = await grammarly.analyse(text).then(correct);
+  // if (text.includes('your') || text.includes('quiet')) {
+  const results = await grammarly.analyse(text);
   console.log(results);
-  if (results.corrected && results.corrected !== results.original) {
+  results.alerts = results.alerts.filter(
+    (r) => !r.title?.startsWith('Capitalization'),
+  );
+  const issues = results.alerts.filter(
+    (r) =>
+      r.impact === 'critical' && !['Style', 'Punctuation'].includes(r.group),
+  );
+  if (issues.length) {
     return [
-      ...results.alerts
-        .filter((r) => !(r as any).hidden)
-        .map(
-          (a) =>
-            `• ${a.title}: <b>${
-              a.highlightText
-            }</b> -> <b>${a.replacements.join('</b> or <b>')}</b>`,
-        ),
-      results.corrected &&
-        '\n<i>Fixed</i>:\n<blockquote expandable>' +
-          Bun.escapeHTML(results.corrected) +
-          '</blockquote>',
+      ...issues.map(
+        (r) =>
+          `• ${r.title}: <b>${r.highlightText}</b> ${
+            r.replacements.length
+              ? `-> <b>${r.replacements.join('</b> or <b>')}</b>`
+              : ''
+          }`,
+      ),
+      '\n<i>Fixed (I hope)</i>:\n<blockquote expandable>' +
+        Bun.escapeHTML(correct(results).corrected!) +
+        '</blockquote>',
     ].join('\n');
   }
+  // }
 };
 
 const thumbsUp = '<tg-emoji emoji-id="5368324170671202286">👍</tg-emoji>';
