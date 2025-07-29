@@ -1,0 +1,16 @@
+{
+  "name": "grammarify-bot",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@stewartmcgown/grammarly-api": "^1.1.2",
+    "telegraf": "^4.16.3"
+  }
+}

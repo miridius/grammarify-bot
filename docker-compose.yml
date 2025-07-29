@@ -1,0 +1,19 @@
+
+services:
+  # Run the dev bot with hot reloading of local files
+  dev:
+    container_name: grammarify_bot_dev
+    image: grammarify_bot_dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env.dev
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/app
+    tmpfs:
+      - /tmp
+    user: '${UID:-1000}:${GID:-1000}'
+    restart: unless-stopped
